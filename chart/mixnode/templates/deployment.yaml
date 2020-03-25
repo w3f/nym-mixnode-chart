@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mixnode.fullname" . }}
+  labels:
+    {{- include "mixnode.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mixnode.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mixnode.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "mixnode.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init-myservice
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
+            name: {{ include "mixnode.fullname" . }}-config-volume
+          command: ["/bin/sh"]
+          args: ["-c", "target/release/nym-mixnode init --id {{ .Values.nym.id }} --host {{ .Values.nym.host }} --announce-host {{ .Values.nym.announce }} --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }}" ]
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
+            name: {{ include "mixnode.fullname" . }}-config-volume
+          command: ["/bin/sh"]
+          args: ["-c", "target/release/nym-mixnode run --id {{ .Values.nym.id }}" ]
+          ports:
+            - name: nym
+              containerPort: {{ .Values.nym.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+{{ if eq .Values.environment "ci" }}
+  volumes:
+  - name: {{ include "mixnode.fullname" . }}-config-volume
+    emptyDir: {}
+{{ else }}
+volumeClaimTemplates:
+- metadata:
+    name: {{ include "mixnode.fullname" . }}-config-volume
+  spec:
+    accessModes: [ "ReadWriteOnce" ]
+    resources:
+      requests:
+        storage: 2Gi
+{{ end }}
