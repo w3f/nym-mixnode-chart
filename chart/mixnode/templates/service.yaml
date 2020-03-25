@@ -6,11 +6,10 @@ metadata:
     {{- include "mixnode.labels" . | nindent 4 }}
 
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type | default  "LoadBalancer" }}
   ports:
-    - nodePort: {{ .Values.service.port }}
-      targetPort: {{ .Values.nym.port }}
+    - name: nym
+      port: {{ .Values.service.port | default  "8009" }}
       protocol: TCP
-      name: nym
   selector:
     {{- include "mixnode.selectorLabels" . | nindent 4 }}
