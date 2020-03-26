@@ -19,11 +19,11 @@ jobs:
       - run:
           description: helm lint
           command: |
-            helm lint ./charts/mixnode
+            helm lint ./chart/mixnode
       - run:
           description: helm template
           command: |
-            helm template ./charts/mixnode
+            helm template ./chart/mixnode
 
   integrationTests:
     docker:
