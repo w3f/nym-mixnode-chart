@@ -9,7 +9,7 @@ spec:
   type: {{ .Values.service.type | default  "LoadBalancer" }}
   ports:
     - name: nym
-      port: {{ .Values.service.port | default  "8009" }}
+      port: 8000
       protocol: TCP
   selector:
     {{- include "mixnode.selectorLabels" . | nindent 4 }}

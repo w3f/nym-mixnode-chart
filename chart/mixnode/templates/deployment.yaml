@@ -23,18 +23,18 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: {{ .Chart.Name }}-init-myservice
-          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
           - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
             name: {{ include "mixnode.fullname" . }}-config-volume
           command: ["/bin/sh"]
-          args: ["-c", "target/release/nym-mixnode init --id {{ .Values.nym.id }} --host {{ .Values.nym.host }} --announce-host {{ .Values.nym.announce }} --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }}" ]
+          args: ["-c", "target/release/nym-mixnode init --id {{ .Values.nym.id }} --host {{ .Values.nym.host }} --announce-host {{ .Values.nym.announce }} --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
           - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
@@ -43,7 +43,7 @@ spec:
           args: ["-c", "target/release/nym-mixnode run --id {{ .Values.nym.id }}" ]
           ports:
             - name: nym
-              containerPort: {{ .Values.nym.port }}
+              containerPort: 8000
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -59,12 +59,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-
-{{ if eq .Values.environment "ci" }}
-  volumes:
-  - name: {{ include "mixnode.fullname" . }}-config-volume
-    emptyDir: {}
-{{ else }}
 volumeClaimTemplates:
 - metadata:
     name: {{ include "mixnode.fullname" . }}-config-volume
@@ -73,4 +67,3 @@ volumeClaimTemplates:
     resources:
       requests:
         storage: 2Gi
-{{ end }}

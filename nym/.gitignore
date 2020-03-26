@@ -1,9 +1,0 @@
-/targetString
-**/*.rs.bk
-/*/target
-/test_inbox
-.idea
-target
-.env
-/.vscode/settings.json
-sample-configs/validator-config.toml
