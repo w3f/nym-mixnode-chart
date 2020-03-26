@@ -19,11 +19,11 @@ jobs:
       - run:
           description: helm lint
           command: |
-            helm lint ./charts/nym-mixnode
+            helm lint ./charts/mixnode
       - run:
           description: helm template
           command: |
-            helm template ./charts/nym-mixnode
+            helm template ./charts/mixnode
 
   integrationTests:
     docker:
