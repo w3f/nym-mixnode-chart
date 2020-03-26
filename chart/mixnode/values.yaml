@@ -1,8 +1,4 @@
-# Default values for mixnode.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-environment:
+environment: production
 
 nym:
   id: baby-yoda
@@ -18,34 +14,13 @@ image:
   tag: v0.0.1
   pullPolicy: IfNotPresent
 
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: nym-mixnode
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: LoadBalancer
-  port: 8008
+  port: 8000
 
 resources:
   limits:
@@ -57,7 +32,3 @@ resources:
 
 nodeSelector:
   nym: true
-
-tolerations: []
-
-affinity: {}
