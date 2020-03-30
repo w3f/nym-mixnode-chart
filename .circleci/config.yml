@@ -23,7 +23,7 @@ jobs:
       - run:
           description: helm template
           command: |
-            helm template ./charts/mixnode
+            helm template ./charts/nym-mixnode
 
   integrationTests:
     docker:
