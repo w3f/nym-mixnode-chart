@@ -42,6 +42,7 @@ spec:
             - while [ -z $EXTERNAL_IP ]; do echo -en '\n'; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 10; done;
 {{ end }}
             - target/release/nym-mixnode init --id w3f --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
+            - sleep 500000000;
       containers:
         - name: mixnode
           securityContext:
