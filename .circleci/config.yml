@@ -30,7 +30,7 @@ jobs:
       - image: web3f/ci-commons:v2.0.1
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
       - run:
           command: |
             /scripts/integration-tests.sh

@@ -26,7 +26,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
-          - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
+          - mountPath: "/root/.nym/mixnodes"
             name: {{ include "mixnode.fullname" . }}-config-volume
           env:
           - name: INTERNAL_IP
@@ -35,6 +35,10 @@ spec:
                 fieldPath: status.podIP
           command: ["/bin/sh", "-c"]
           args:
+            - ls
+            - pwd
+            - ls
+
 {{ if eq .Values.environment "ci" }}
             - EXTERNAL_IP="1.2.3.4"
 {{ else }}
@@ -45,7 +49,14 @@ spec:
                 [ -z "$EXTERNAL_IP" ] && sleep 10;
               done;
 {{ end }}
+            - echo {{ .Values.nym.id }}
+            - echo $INTERNAL_IP
+            - echo $EXTERNAL_IP
+            - echo {{ .Values.nym.layer }}
+            - echo {{ .Values.nym.location }}
             - target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
+            - ls /root/.nym/
+            - ls /root/.nym/{{ .Values.nym.id }}
       containers:
         - name: mixnode
           securityContext:
@@ -53,10 +64,16 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
-          - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
+          - mountPath: "/root/.nym/mixnodes"
             name: {{ include "mixnode.fullname" . }}-config-volume
-          command: ["/bin/sh"]
-          args: ["-c", "target/release/nym-mixnode run --id {{ .Values.nym.id }}" ]
+          command: ["/bin/sh", "-c"]
+          args:
+            - echo "local folder"
+            - ls
+            - echo "config folder"
+            - ls /root/.nym/mixnodes
+            - sleep 50000
+
           ports:
             - name: nym
               containerPort: 8000
@@ -76,5 +93,5 @@ volumeClaimTemplates:
     accessModes: [ "ReadWriteOnce" ]
     resources:
       requests:
-        storage: 2Gi
+        storage: 1Gi
 {{ end }}
