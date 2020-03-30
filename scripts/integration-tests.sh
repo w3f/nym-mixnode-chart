@@ -16,7 +16,7 @@ teardown() {
 
 main(){
   echo Installing...
-  helm install --set environment="ci" --set nym.id=${NYM_ID} --set nym.host=172.17.0.4 nym-mixnode ./charts/nym-mixnode
+  helm install --set environment="ci" nym-mixnode ./charts/nym-mixnode
 
   run_tests
 

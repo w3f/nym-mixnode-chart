@@ -19,7 +19,7 @@ jobs:
       - run:
           description: helm lint
           command: |
-            helm lint ./charts/mixnode
+            helm lint ./charts/nym-mixnode
       - run:
           description: helm template
           command: |

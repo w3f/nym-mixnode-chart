@@ -28,8 +28,24 @@ spec:
           volumeMounts:
           - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
             name: {{ include "mixnode.fullname" . }}-config-volume
-          command: ["/bin/sh"]
-          args: ["-c", "export INTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $3}'); export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
+          env:
+          - name: INTERNAL_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          command: ["/bin/sh", "-c"]
+          args:
+{{ if eq .Values.environment "ci" }}
+            - EXTERNAL_IP="1.2.3.4"
+{{ else }}
+            - EXTERNAL_IP=""
+            - while [ -z $EXTERNAL_IP ]; do
+                echo -en '\n';
+                export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}');
+                [ -z "$EXTERNAL_IP" ] && sleep 10;
+              done;
+{{ end }}
+            - target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
       containers:
         - name: mixnode
           securityContext:
@@ -47,11 +63,12 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
 
+{{ if eq .Values.environment "ci" }}
+      volumes:
+      - name: {{ include "mixnode.fullname" . }}-config-volume
+        emptyDir: {}
+{{ else }}
 volumeClaimTemplates:
 - metadata:
     name: {{ include "mixnode.fullname" . }}-config-volume
@@ -60,3 +77,4 @@ volumeClaimTemplates:
     resources:
       requests:
         storage: 2Gi
+{{ end }}
