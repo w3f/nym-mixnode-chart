@@ -22,16 +22,16 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        - name: {{ .Chart.Name }}-init-myservice
+        - name: init-mixnode
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
           - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
             name: {{ include "mixnode.fullname" . }}-config-volume
           command: ["/bin/sh"]
-          args: ["-c", "target/release/nym-mixnode init --id {{ .Values.nym.id }} --host {{ .Values.nym.host }} --announce-host {{ .Values.nym.announce }} --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
+          args: ["-c", "export INTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $3}'); export EXTERNAL_IP=$(kubectl get services | grep "LoadBalancer" | awk '{print $4}'); target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
       containers:
-        - name: {{ .Chart.Name }}
+        - name: mixnode
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

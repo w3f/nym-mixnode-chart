@@ -6,7 +6,7 @@ metadata:
     {{- include "mixnode.labels" . | nindent 4 }}
 
 spec:
-  type: {{ .Values.service.type | default  "LoadBalancer" }}
+  type: LoadBalancer
   ports:
     - name: nym
       port: 8000
