@@ -40,6 +40,14 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
+Selector labels
+*/}}
+{{- define "mixnode.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "mixnode.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "mixnode.serviceAccountName" -}}
