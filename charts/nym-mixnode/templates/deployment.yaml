@@ -25,6 +25,9 @@ spec:
         - name: init-mixnode
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - name: mixnodes-config-volume
+            mountPath: /root/.nym/mixnodes
           env:
           - name: INTERNAL_IP
             valueFrom:
@@ -36,37 +39,29 @@ spec:
             - EXTERNAL_IP="1.2.3.4"
 {{ else }}
             - EXTERNAL_IP=""
-            - while [ -z $EXTERNAL_IP ]; do
-                echo -en '\n';
-                export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}');
-                [ -z "$EXTERNAL_IP" ] && sleep 10;
-              done;
+            - while [ -z $EXTERNAL_IP ]; do echo -en '\n'; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 10; done;
 {{ end }}
-            - target/release/nym-mixnode init w3f --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
+            - target/release/nym-mixnode init --id w3f --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
       containers:
         - name: mixnode
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - name: mixnodes-config-volume
+            mountPath: /root/.nym-test/mixnodes
+          env:
+          - name: INTERNAL_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
           ports:
             - name: nym
               containerPort: 8000
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
-{{ if eq .Values.environment "ci" }}
       volumes:
-      - name: nymnode-config-volume
+      - name: mixnodes-config-volume
         emptyDir: {}
-{{ else }}
-volumeClaimTemplates:
-- metadata:
-    name: nymnode-config-volume
-  spec:
-    accessModes: [ "ReadWriteOnce" ]
-    resources:
-      requests:
-        storage: 1Gi
-{{ end }}
