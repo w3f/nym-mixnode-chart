@@ -25,9 +25,6 @@ spec:
         - name: init-mixnode
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-          - mountPath: "/root/.nym/mixnodes"
-            name: {{ include "mixnode.fullname" . }}-config-volume
           env:
           - name: INTERNAL_IP
             valueFrom:
@@ -35,10 +32,6 @@ spec:
                 fieldPath: status.podIP
           command: ["/bin/sh", "-c"]
           args:
-            - ls
-            - pwd
-            - ls
-
 {{ if eq .Values.environment "ci" }}
             - EXTERNAL_IP="1.2.3.4"
 {{ else }}
@@ -49,31 +42,13 @@ spec:
                 [ -z "$EXTERNAL_IP" ] && sleep 10;
               done;
 {{ end }}
-            - echo {{ .Values.nym.id }}
-            - echo $INTERNAL_IP
-            - echo $EXTERNAL_IP
-            - echo {{ .Values.nym.layer }}
-            - echo {{ .Values.nym.location }}
-            - target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
-            - ls /root/.nym/
-            - ls /root/.nym/{{ .Values.nym.id }}
+            - target/release/nym-mixnode init w3f --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000;
       containers:
         - name: mixnode
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-          - mountPath: "/root/.nym/mixnodes"
-            name: {{ include "mixnode.fullname" . }}-config-volume
-          command: ["/bin/sh", "-c"]
-          args:
-            - echo "local folder"
-            - ls
-            - echo "config folder"
-            - ls /root/.nym/mixnodes
-            - sleep 50000
-
           ports:
             - name: nym
               containerPort: 8000
@@ -83,12 +58,12 @@ spec:
 
 {{ if eq .Values.environment "ci" }}
       volumes:
-      - name: {{ include "mixnode.fullname" . }}-config-volume
+      - name: nymnode-config-volume
         emptyDir: {}
 {{ else }}
 volumeClaimTemplates:
 - metadata:
-    name: {{ include "mixnode.fullname" . }}-config-volume
+    name: nymnode-config-volume
   spec:
     accessModes: [ "ReadWriteOnce" ]
     resources:

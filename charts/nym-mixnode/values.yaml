@@ -1,7 +1,6 @@
 environment: production
 
 nym:
-  id: baby-yoda
   layer: 3
   location: London
 
@@ -9,7 +8,7 @@ replicaCount: 1
 
 image:
   repository: web3f/nym-mixnode
-  tag: v0.0.4
+  tag: v0.0.7
   pullPolicy: IfNotPresent
 
 serviceAccount:

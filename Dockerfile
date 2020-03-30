@@ -27,4 +27,5 @@ WORKDIR nym
 RUN cargo build --release
 
 EXPOSE 8000
-#CMD ["target/release/nym-mixnode"]
+RUN target/release/nym-mixnode init --id w3f --host 1.2.3.4 --layer 3 --port 8000
+ENTRYPOINT target/release/nym-mixnode run --id w3f
