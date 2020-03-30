@@ -29,7 +29,7 @@ spec:
           - mountPath: "/root/.nym/{{ .Values.nym.id }}/config/config.toml"
             name: {{ include "mixnode.fullname" . }}-config-volume
           command: ["/bin/sh"]
-          args: ["-c", "export INTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $3}'); export EXTERNAL_IP=$(kubectl get services | grep "LoadBalancer" | awk '{print $4}'); target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
+          args: ["-c", "export INTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $3}'); export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); target/release/nym-mixnode init --id {{ .Values.nym.id }} --host $INTERNAL_IP --announce-host $EXTERNAL_IP --layer {{ .Values.nym.layer }} --location {{ .Values.nym.location }} --port 8000" ]
       containers:
         - name: mixnode
           securityContext:
