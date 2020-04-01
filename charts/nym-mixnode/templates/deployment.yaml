@@ -57,10 +57,11 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+
+{{ if eq .Values.environment "production" }}
           volumeMounts:
           - name: config-volume
             mountPath: /root/.nym/mixnodes/w3f/config/
-{{ if eq .Values.environment "production" }}
           - name: public-key-volume
             mountPath: /root/.nym/mixnodes/w3f/data/public_sphinx.pem
             subPath: public_sphinx.pem
