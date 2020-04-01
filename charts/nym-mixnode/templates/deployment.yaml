@@ -23,8 +23,6 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: init-config
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
@@ -50,16 +48,9 @@ spec:
               target/release/nym-mixnode init --id w3f --host $INTERNAL_IP ----announce-host $EXTERNAL_IP --layer 3 --location europe-west3 --port 8000;
 {{ end }}
       containers:
-        - name: mixnode
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+        - name: nym-mixnode
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-          - name: INTERNAL_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
           ports:
             - name: nym
               containerPort: 8000
