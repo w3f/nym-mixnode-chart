@@ -29,4 +29,4 @@ RUN mkdir /root/.nym/ && mkdir /root/.nym/mixnodes/ && mkdir /root/.nym/mixnodes
 COPY config/config.toml /root/.nym/mixnodes/w3f/config/config.toml
 EXPOSE 8000
 
-ENTRYPOINT target/release/nym-mixnode run --id w3f --host ${INTERNAL_IP} --announce-host ${EXTERNAL_IP}
+ENTRYPOINT target/release/nym-mixnode run --id w3f --port 8000

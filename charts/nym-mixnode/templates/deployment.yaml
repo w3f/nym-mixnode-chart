@@ -21,6 +21,34 @@ spec:
       serviceAccountName: {{ include "mixnode.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: INTERNAL_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+{{ if eq .Values.environment "production" }}
+          volumeMounts:
+          - name: config-volume
+            mountPath: /root/.nym/mixnodes/w3f/config/
+          - name: gcloud-volume
+            mountPath: /root/.gcloud
+            readOnly: true
+          command: ["/bin/sh", "-c"]
+          args:
+            - gcloud auth activate-service-account --key-file=/root/.gcloud/credentials.json;
+              gcloud config set project polkadot-benchmarks;
+              gcloud container clusters get-credentials engineering --region=europe-west3;
+              kubectl config use-context gke_polkadot-benchmarks_europe-west3_engineering;
+              EXTERNAL_IP='';
+              while [ -z $EXTERNAL_IP ]; do echo $EXTERNAL_IP; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 100; echo $EXTERNAL_IP; done;
+              target/release/nym-mixnode init --id w3f --host $INTERNAL_IP ----announce-host $EXTERNAL_IP --layer 3 --location europe-west3 --port 8000;
+{{ end }}
       containers:
         - name: mixnode
           securityContext:
@@ -41,6 +69,8 @@ spec:
 
 {{ if eq .Values.environment "production" }}
           volumeMounts:
+          - name: config-volume
+            mountPath: /root/.nym/mixnodes/w3f/config/
           - name: public-key-volume
             mountPath: /root/.nym/mixnodes/w3f/data/public_sphinx.pem
             subPath: public_sphinx.pem
@@ -49,17 +79,7 @@ spec:
             mountPath: /root/.nym/mixnodes/w3f/data/private_sphinx.pem
             subPath: private_sphinx.pem
             readOnly: true
-          - name: gcloud-volume
-            mountPath: /root/.gcloud
-            readOnly: true
-          command: ["/bin/sh", "-c"]
-          args:
-            - gcloud auth activate-service-account --key-file=/root/.gcloud/credentials.json;
-              gcloud config set project polkadot-benchmarks;
-              gcloud container clusters get-credentials engineering --region=europe-west3;
-              kubectl config use-context gke_polkadot-benchmarks_europe-west3_engineering;
-              EXTERNAL_IP='';
-              while [ -z $EXTERNAL_IP ]; do echo $EXTERNAL_IP; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); sleep 10;done;
+
       volumes:
       - name: public-key-volume
         secret:
@@ -76,3 +96,5 @@ spec:
             path: credentials.json
             mode: 0400
 {{ end }}
+      - name: config-volume
+        emptyDir: {}
