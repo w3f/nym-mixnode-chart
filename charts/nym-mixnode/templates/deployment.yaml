@@ -30,10 +30,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-{{ if eq .Values.environment "production" }}
           volumeMounts:
           - name: config-volume
             mountPath: /root/.nym/mixnodes/w3f/config/
+{{ if eq .Values.environment "production" }}
           - name: gcloud-volume
             mountPath: /root/.gcloud
             readOnly: true
@@ -57,11 +57,10 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
-{{ if eq .Values.environment "production" }}
           volumeMounts:
           - name: config-volume
             mountPath: /root/.nym/mixnodes/w3f/config/
+{{ if eq .Values.environment "production" }}
           - name: public-key-volume
             mountPath: /root/.nym/mixnodes/w3f/data/public_sphinx.pem
             subPath: public_sphinx.pem
@@ -70,8 +69,11 @@ spec:
             mountPath: /root/.nym/mixnodes/w3f/data/private_sphinx.pem
             subPath: private_sphinx.pem
             readOnly: true
-
+{{ end }}
       volumes:
+      - name: config-volume
+        emptyDir: {}
+{{ if eq .Values.environment "production" }}
       - name: public-key-volume
         secret:
           secretName: {{ include "mixnode.fullname" . }}-public
@@ -87,5 +89,3 @@ spec:
             path: credentials.json
             mode: 0400
 {{ end }}
-      - name: config-volume
-        emptyDir: {}
