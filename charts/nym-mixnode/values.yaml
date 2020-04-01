@@ -2,8 +2,7 @@ environment: production
 
 nym:
   layer: 3
-  location: London
-  config:
+  location:
   data:
     private_sphinx:
     public_sphinx:
