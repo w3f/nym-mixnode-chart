@@ -27,6 +27,18 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: INTERNAL_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          ports:
+            - name: nym
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
 {{ if eq .Values.environment "production" }}
           volumeMounts:
           - name: public-key-volume
@@ -37,23 +49,10 @@ spec:
             mountPath: /root/.nym/mixnodes/w3f/data/private_sphinx.pem
             subPath: private_sphinx.pem
             readOnly: true
-{{ end }}
-          env:
-          - name: INTERNAL_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
           command: ["/bin/sh", "-c"]
           args:
             - EXTERNAL_IP="";
             - while [ -z $EXTERNAL_IP ]; do echo -en '\n'; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 10; done;
-          ports:
-            - name: nym
-              containerPort: 8000
-              protocol: TCP
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-{{ if eq .Values.environment "production" }}
       volumes:
       - name: public-key-volume
         secret:
