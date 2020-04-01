@@ -1,6 +1,8 @@
 FROM rust:1.42.0
 ENV KUBECTL_VERSION=v1.17.3
 ENV CLOUD_SDK_VERSION=283.0.0
+ENV INTERNAL_IP=127.0.0.1
+ENV EXTERNAL_IP=0.0.0.0
 
 RUN set -ex \
     && apt-get clean \
@@ -25,7 +27,10 @@ RUN git clone https://github.com/nymtech/nym.git
 WORKDIR nym
 
 RUN cargo build --release
-
+RUN mkdir /root/.nym/ && mkdir /root/.nym/mixnodes/ && mkdir /root/.nym/mixnodes/w3f/ && mkdir /root/.nym/mixnodes/w3f/data/ && mkdir /root/.nym/mixnodes/w3f/config/
+COPY config/config.toml /root/.nym/mixnodes/w3f/config/config.toml
+COPY config/private_sphinx.pem /root/.nym/mixnodes/w3f/data/private_sphinx.pem
+COPY config/public_sphinx.pem /root/.nym/mixnodes/w3f/data/public_sphinx.pem
 EXPOSE 8000
-RUN target/release/nym-mixnode init --id w3f --host 1.2.3.4 --layer 3 --port 8000
-ENTRYPOINT target/release/nym-mixnode run --id w3f
+
+ENTRYPOINT target/release/nym-mixnode run --id w3f --host ${INTERNAL_IP} --announce-host ${EXTERNAL_IP}

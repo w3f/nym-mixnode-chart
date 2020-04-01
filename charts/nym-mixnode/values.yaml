@@ -3,12 +3,16 @@ environment: production
 nym:
   layer: 3
   location: London
+  config:
+  data:
+    private_sphinx:
+    public_sphinx:
 
 replicaCount: 1
 
 image:
   repository: web3f/nym-mixnode
-  tag: v0.0.7
+  tag: v0.0.9
   pullPolicy: IfNotPresent
 
 serviceAccount:

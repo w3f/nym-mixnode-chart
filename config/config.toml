@@ -1,0 +1,17 @@
+[mixnode]
+id = 'w3f'
+location = 'London'
+layer = 3
+listening_address = '127.0.0.1:8000'
+private_sphinx_key_file = '/root/.nym/mixnodes/w3f/data/private_sphinx.pem'
+public_sphinx_key_file = '/root/.nym/mixnodes/w3f/data/public_sphinx.pem'
+announce_address = '0.0.0.0:8000'
+nym_root_directory = '/root/.nym/mixnodes'
+
+[debug]
+presence_directory_server = 'https://directory.nymtech.net'
+presence_sending_delay = 1500
+metrics_directory_server = 'https://directory.nymtech.net'
+metrics_sending_delay = 1000
+packet_forwarding_initial_backoff = 10000
+packet_forwarding_maximum_backoff = 300000
