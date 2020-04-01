@@ -7,6 +7,10 @@ nym:
     private_sphinx:
     public_sphinx:
 
+provider:
+  credentials:
+    gcp:
+
 replicaCount: 1
 
 image:

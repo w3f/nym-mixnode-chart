@@ -5,6 +5,7 @@ VALUES_FILE=$(pwd)/values.yaml
 
 PRIVATE_SPHINX=$(cat $PRIVATE_KEY_CONTENT | base64 | tr -d '\n')
 PUBLIC_SPHINX=$(cat $PUBLIC_KEY_CONTENT | base64 | tr -d '\n')
+GOOGLE_APPLICATION_CREDENTIALS_CONTENT=$(cat $GCP_CREDENTIALS | base64 | tr -d '\n')
 
 cat > $VALUES_FILE <<EOF
 
@@ -17,6 +18,10 @@ nym:
       $PRIVATE_SPHINX
     public_sphinx: |
       $PUBLIC_SPHINX
+provider:
+  credentials:
+    gcp: |
+      $GOOGLE_APPLICATION_CREDENTIALS_CONTENT
 EOF
 
 cat ${VALUES_FILE}
