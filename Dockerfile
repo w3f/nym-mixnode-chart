@@ -25,8 +25,7 @@ RUN git clone https://github.com/nymtech/nym.git
 WORKDIR nym
 
 RUN cargo build --release
-RUN mkdir /root/.nym/ && mkdir /root/.nym/mixnodes/ && mkdir /root/.nym/mixnodes/w3f/ && mkdir /root/.nym/mixnodes/w3f/data/ && mkdir /root/.nym/mixnodes/w3f/config/
-COPY config/config.toml /root/.nym/mixnodes/w3f/config/config.toml
+RUN target/release/nym-mixnode init --id w3f --host 0.0.0.0 ----announce-host 0.0.0.0 --layer 3 --port 8000
 EXPOSE 8000
 
 ENTRYPOINT target/release/nym-mixnode run --id w3f --port 8000

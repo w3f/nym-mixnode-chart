@@ -69,7 +69,7 @@ spec:
             mountPath: /root/.nym/mixnodes/w3f/data/private_sphinx.pem
             subPath: private_sphinx.pem
             readOnly: true
-{{ end }}
+{{ end }}            
       volumes:
       - name: config-volume
         emptyDir: {}

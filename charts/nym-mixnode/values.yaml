@@ -15,7 +15,7 @@ replicaCount: 1
 
 image:
   repository: web3f/nym-mixnode
-  tag: v0.0.11
+  tag: v0.0.12
   pullPolicy: IfNotPresent
 
 serviceAccount:
