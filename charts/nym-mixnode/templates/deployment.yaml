@@ -6,7 +6,13 @@ metadata:
     {{- include "mixnode.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mixnode.selectorLabels" . | nindent 6 }}
   template:
+    metadata:
+      labels:
+        {{- include "mixnode.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "mixnode.serviceAccountName" . }}
       initContainers:
@@ -21,19 +27,11 @@ spec:
           volumeMounts:
           - name: config-volume
             mountPath: /root/.nym/mixnodes/w3f/config/
-          - name: gcloud-volume
-            mountPath: /root/.gcloud
-            readOnly: true
           command: ["/bin/sh", "-c"]
           args:
-            - gcloud auth activate-service-account --key-file=/root/.gcloud/credentials.json;
-              gcloud config set project polkadot-benchmarks;
-              gcloud container clusters get-credentials engineering --region=europe-west3;
-              kubectl config use-context gke_polkadot-benchmarks_europe-west3_engineering;
-              EXTERNAL_IP='';
+            - EXTERNAL_IP='';
               while [ -z $EXTERNAL_IP ]; do echo $EXTERNAL_IP; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 100; echo $EXTERNAL_IP; done;
               target/release/nym-mixnode init --id w3f --host $INTERNAL_IP ----announce-host $EXTERNAL_IP --layer 3 --location europe-west3 --port 8000;
-{{ end }}
       containers:
         - name: nym-mixnode
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -44,11 +42,10 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
-{{ if eq .Values.environment "production" }}
           volumeMounts:
           - name: config-volume
             mountPath: /root/.nym/mixnodes/w3f/config/
+{{ if eq .Values.environment "production" }}
           - name: public-key-volume
             mountPath: /root/.nym/mixnodes/w3f/data/public_sphinx.pem
             subPath: public_sphinx.pem
@@ -68,12 +65,4 @@ spec:
       - name: private-key-volume
         secret:
           secretName: {{ include "mixnode.fullname" . }}-private
-      - name: gcloud-volume
-        secret:
-          secretName: {{ include "mixnode.fullname" . }}-credentials
-          defaultMode: 0600
-          items:
-          - key: gcp
-            path: credentials.json
-            mode: 0400
 {{ end }}
