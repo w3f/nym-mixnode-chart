@@ -18,10 +18,6 @@ nym:
       $PRIVATE_SPHINX
     public_sphinx: |
       $PUBLIC_SPHINX
-provider:
-  credentials:
-    gcp: |
-      $GOOGLE_APPLICATION_CREDENTIALS_CONTENT
 EOF
 
 cat ${VALUES_FILE}
