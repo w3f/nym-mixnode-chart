@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mixnode.fullname" . }}
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mixnode.fullname" . }}
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: {{ include "mixnode.serviceAccountName" . }}
+  namespace: default
+roleRef:
+  kind: Role
+  name: {{ include "mixnode.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io/v1

@@ -6,24 +6,11 @@ metadata:
     {{- include "mixnode.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      {{- include "mixnode.selectorLabels" . | nindent 6 }}
   template:
-    metadata:
-      labels:
-        {{- include "mixnode.selectorLabels" . | nindent 8 }}
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
       serviceAccountName: {{ include "mixnode.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-{{ if eq .Values.environment "production" }}
       initContainers:
-        - name: init-config
+        - name: init
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
