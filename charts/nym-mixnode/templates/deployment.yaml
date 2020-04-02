@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mixnode.fullname" . }}
+  labels:
+    {{- include "mixnode.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mixnode.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mixnode.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "mixnode.serviceAccountName" . }}
+      initContainers:
+        - name: init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: INTERNAL_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          volumeMounts:
+          - name: config-volume
+            mountPath: /root/.nym/mixnodes/w3f/config/
+          command: ["/bin/sh", "-c"]
+          args:
+            - EXTERNAL_IP='';
+              while [ -z $EXTERNAL_IP ]; do echo $EXTERNAL_IP; export EXTERNAL_IP=$(kubectl get services | grep {{ include "mixnode.fullname" . }} | awk '{print $4}'); [ -z "$EXTERNAL_IP" ] && sleep 100; echo $EXTERNAL_IP; done;
+              target/release/nym-mixnode init --id w3f --host $INTERNAL_IP ----announce-host $EXTERNAL_IP --layer 3 --location europe-west3 --port 8000;
+      containers:
+        - name: nym-mixnode
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: nym
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: config-volume
+            mountPath: /root/.nym/mixnodes/w3f/config/
+{{ if eq .Values.environment "production" }}
+          - name: public-key-volume
+            mountPath: /root/.nym/mixnodes/w3f/data/public_sphinx.pem
+            subPath: public_sphinx.pem
+            readOnly: true
+          - name: private-key-volume
+            mountPath: /root/.nym/mixnodes/w3f/data/private_sphinx.pem
+            subPath: private_sphinx.pem
+            readOnly: true
+{{ end }}
+      volumes:
+      - name: config-volume
+        emptyDir: {}
+{{ if eq .Values.environment "production" }}
+      - name: public-key-volume
+        secret:
+          secretName: {{ include "mixnode.fullname" . }}-public
+      - name: private-key-volume
+        secret:
+          secretName: {{ include "mixnode.fullname" . }}-private
+{{ end }}

@@ -1,0 +1,109 @@
+version: 2
+
+jobs:
+  buildImage:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            /scripts/build-image.sh web3f/nym-mixnode .
+
+  chartLint:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - run:
+          description: helm lint
+          command: |
+            helm lint ./charts/nym-mixnode
+      - run:
+          description: helm template
+          command: |
+            helm template ./charts/nym-mixnode
+
+  integrationTests:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - setup_remote_docker:
+      - run:
+          command: |
+            /scripts/integration-tests.sh
+
+  publishImage:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            /scripts/publish-image.sh web3f/nym-mixnode
+
+  publishChart:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - run:
+          command: |
+            /scripts/publish-chart.sh web3f/nym-mixnode
+
+  deploy:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - run:
+          command: |
+            ./scripts/deploy.sh
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - chartLint:
+          filters:
+            tags:
+              only: /.*/
+      - buildImage:
+          filters:
+            tags:
+              only: /.*/
+      - integrationTests:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - buildImage
+            - chartLint
+      - publishImage:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - integrationTests
+      - publishChart:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - integrationTests
+      - deploy:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - publishImage
+            - publishChart

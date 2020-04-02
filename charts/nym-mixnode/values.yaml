@@ -1,0 +1,31 @@
+environment: production
+
+nym:
+  layer: 3
+  location:
+  data:
+    private_sphinx:
+    public_sphinx:
+
+provider:
+  credentials:
+    gcp:
+
+replicaCount: 1
+
+image:
+  repository: web3f/nym-mixnode
+  tag: v0.0.14
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: nym-mixnode
+
+resources:
+  limits:
+     cpu: 200m
+     memory: 128Mi
+  requests:
+     cpu: 100m
+     memory: 128Mi
