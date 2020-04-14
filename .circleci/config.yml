@@ -60,6 +60,8 @@ jobs:
     steps:
       - checkout
       - run:
+          environment:
+            GCP_REGION: europe-west3
           command: |
             ./scripts/deploy.sh
 
