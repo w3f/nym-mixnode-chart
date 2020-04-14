@@ -3,9 +3,8 @@
 set -ex
 VALUES_FILE=$(pwd)/values.yaml
 
-PRIVATE_SPHINX=$(cat $PRIVATE_KEY_CONTENT | base64 | tr -d '\n')
-PUBLIC_SPHINX=$(cat $PUBLIC_KEY_CONTENT | base64 | tr -d '\n')
-GOOGLE_APPLICATION_CREDENTIALS_CONTENT=$(cat $GCP_CREDENTIALS | base64 | tr -d '\n')
+PRIVATE_SPHINX=$(cat $PRIVATE_KEY_CONTENT | base64 -w 0 )
+PUBLIC_SPHINX=$(cat $PUBLIC_KEY_CONTENT | base64 -w 0 )
 
 cat > $VALUES_FILE <<EOF
 
