@@ -3,8 +3,8 @@
 set -ex
 VALUES_FILE=$(pwd)/values.yaml
 
-PRIVATE_SPHINX=$(cat $PRIVATE_KEY_CONTENT | base64 -w 0 )
-PUBLIC_SPHINX=$(cat $PUBLIC_KEY_CONTENT | base64 -w 0 )
+PRIVATE_SPHINX=$(echo $PRIVATE_KEY_CONTENT | base64 -w 0 )
+PUBLIC_SPHINX=$(echo $PUBLIC_KEY_CONTENT | base64 -w 0 )
 
 cat > $VALUES_FILE <<EOF
 
