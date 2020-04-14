@@ -3,7 +3,7 @@ version: 2
 jobs:
   buildImage:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - setup_remote_docker
@@ -13,7 +13,7 @@ jobs:
 
   chartLint:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - run:
@@ -27,7 +27,7 @@ jobs:
 
   integrationTests:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - setup_remote_docker:
@@ -37,7 +37,7 @@ jobs:
 
   publishImage:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - setup_remote_docker
@@ -47,7 +47,7 @@ jobs:
 
   publishChart:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - run:
@@ -56,7 +56,7 @@ jobs:
 
   deploy:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.0.2
     steps:
       - checkout
       - run:
